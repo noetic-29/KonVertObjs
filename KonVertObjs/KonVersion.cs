@@ -1,4 +1,4 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 // www.noetic-29.com
 //========================================================================
@@ -11,12 +11,13 @@
 //import java.text.NumberFormat;
 
 using System;
-using Newtonsoft;
-using Newtonsoft.Json;
-/*
-using JSONObject = org.json.simple.JSONObject;
-using JsonParseException = com.google.gson.JsonParseException;
-*/
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Threading.Tasks;
+using System.Globalization;
+using System.Net;
 
 namespace KonVertObjs
 {
@@ -49,10 +50,9 @@ namespace KonVertObjs
                     return true;
                 }
         */
-
         public KonVersionGroup Group {
             get {
-                if (myVersionGroupID != null && myVersionGroupID != "" && theSet != null)
+                if (!String.IsNullOrEmpty(myVersionGroupID) && theSet != null)
                 {
                     return theSet.getKonVersionGroup(myVersionGroupID);
                 }
@@ -63,14 +63,9 @@ namespace KonVertObjs
         // 2017-12-06 EIO Tell JSON not to serialize Group so doen's recurse
         public bool ShouldSerializeGroup() { return false; }
 
-        // Actual KonVertUnit for the left units of this conversion
-        //private KonVertUnit myVertUnitLeft;
-
-        // Actual KonVertUnit for the right units of this conversion
-        //private KonVertUnit myVertUnitRight;
         public KonVertUnit LeftUnit {
             get {
-                if (myVertUnitLeftID != null && myVertUnitLeftID != "" && myVersionGroupID != null && myVersionGroupID != "" && theSet != null)
+                if (!String.IsNullOrEmpty(myVertUnitLeftID) && !String.IsNullOrEmpty(myVersionGroupID) && theSet != null)
                 {
                     KonVersionGroup myGroup = theSet.getKonVersionGroup(myVersionGroupID);
                     if (myGroup != null)
@@ -88,7 +83,7 @@ namespace KonVertObjs
 
         public KonVertUnit RightUnit {
             get {
-                if (myVertUnitRightID != null && myVertUnitRightID != "" && myVersionGroupID != null && myVersionGroupID != "" && theSet != null)
+                if (!String.IsNullOrEmpty(myVertUnitRightID) && !String.IsNullOrEmpty(myVersionGroupID) && theSet != null)
                 {
                     KonVersionGroup myGroup = theSet.getKonVersionGroup(myVersionGroupID);
                     if (myGroup != null)
@@ -104,7 +99,7 @@ namespace KonVertObjs
 
         public bool ShouldSerializeRightUnit() { return false; }
 
-        // Unique language independent ID of the conversion Group for this conversion
+       // Unique language independent ID of the conversion Group for this conversion
         public string myVersionGroupID { get; set; }
 
         // Unique language independent ID of the left side conversion units for this conversion
@@ -136,7 +131,6 @@ namespace KonVertObjs
                 privatemyLeftNumber = KonFuncs.setPrecision(value, 7);
             }
         }
-
         public string myLeftNumberDisplay
 		{
             get {
@@ -158,7 +152,6 @@ namespace KonVertObjs
                 }
             }
         }
-
         public bool myLeftDST { get; set; }
 
         private decimal privatemyRightNumber;
@@ -181,7 +174,6 @@ namespace KonVertObjs
                 privatemyRightNumber = KonFuncs.setPrecision(value, 7);
             }
         }
-
         public string myRightNumberDisplay
 		{
             get {
@@ -210,21 +202,6 @@ namespace KonVertObjs
 
 		// used for TIME conversion to account for over a day between times
         public int AddDays { get; set; }
-        /*
-                private int _addDays = 0;
-                public int AddDays
-                {
-                    get
-                    {
-                        return _addDays;
-                    }
-                    set
-                    {
-                        _addDays = value;
-                    }
-                }
-        */
-
         // sets all non-KonVertObjs values which causes other KonVertObjs values to be set
         public KonVersion Equal {
             set {
@@ -241,6 +218,7 @@ namespace KonVertObjs
             }
         }
 
+
         // CONSTRUCTORS
         public KonVersion(string aVersionGroupID, KonVertSet aSet) : base(aSet) 
 		{
@@ -252,7 +230,7 @@ namespace KonVertObjs
 
 		public KonVersion(KonVertSet aSet) : base(aSet) { }
 
-        [JsonConstructor]
+        //NJ[JsonConstructor]
         public KonVersion() : base()
         {
             theSet = null;
@@ -269,7 +247,7 @@ namespace KonVertObjs
 
 			if (KonFuncs.isGroupTime(Group))
 			{
-				KonVertUnitTime myKVUT = new KonVertUnitTime(this);
+				KonVertUnitTime myKVUT = new KonVertUnitTime(theSet, this);
 				return myKVUT.performKonversionTime(doLeftRight);
 			}
 			myLeft2Right = doLeftRight;
@@ -321,7 +299,7 @@ namespace KonVertObjs
 
 			if (KonFuncs.isGroupTime(Group))
 			{
-				KonVertUnitTime myKVUT = new KonVertUnitTime(this);
+				KonVertUnitTime myKVUT = new KonVertUnitTime(theSet, this);
 				return myKVUT.toStringTime();
 			}
 			// 2014-12-05 EIO - avoid setting to sub-unit if sub-unit is what we're converting to
@@ -354,7 +332,7 @@ namespace KonVertObjs
 			}
 			if (KonFuncs.isGroupTime(Group))
 			{
-				KonVertUnitTime myKVUT = new KonVertUnitTime(this);
+				KonVertUnitTime myKVUT = new KonVertUnitTime(theSet, this);
 				return myKVUT.val2StrTime(aUnit, aNum);
 			}
 			return aUnit.prettyVal2Str(aNum, false);
@@ -413,8 +391,26 @@ namespace KonVertObjs
 			return true;
 		}
 
-		// call this function to clear groups out of a KonVersion before writing to the KonVertUserParams file
-		public void prepareToWrite()
+        // sets all non-KonVertObjs values which causes other KonVertObjs values to be set
+        // 2019-11-19 This creates a write only property that copies values from an existing Konversion into this 
+        //     in other cases I use setEqualTo which, for some reason, I prefer
+        // changed to setEqualTo 2019-11-20
+        public void setEqualTo(KonVersion aKonVersion)
+        {
+            this.myVertUnitLeftID = aKonVersion.myVertUnitLeftID;
+            this.myVertUnitRightID = aKonVersion.myVertUnitRightID;
+            //this.Group = value.Group;
+            this.myLeft2Right = aKonVersion.myLeft2Right;
+            this.myLeftNumber = aKonVersion.myLeftNumber;
+            this.myRightNumber = aKonVersion.myRightNumber;
+            this.AddDays = aKonVersion.AddDays;
+            this.myRightDST = aKonVersion.myRightDST;
+            this.myLeftDST = aKonVersion.myLeftDST;
+            this.myVersionGroupID = aKonVersion.myVersionGroupID;
+        }
+
+        // call this function to clear groups out of a KonVersion before writing to the KonVertUserParams file
+        public void prepareToWrite()
 		{
 			//this.Group = null;
 			//this.myVertUnitLeft = null;
@@ -422,6 +418,7 @@ namespace KonVertObjs
 		}
 
         // Build a new KonVersion that is a value copy of the IDs in this KonVersion
+        // 2019-11-20 this should be abrogated in favor of setEqualTo which ensures new instances (so changing source doesn't change copy)
         public KonVersion buildCopy()
         {
             KonVersion aKonversion = new KonVersion(theSet);
@@ -458,89 +455,6 @@ namespace KonVertObjs
             aKonversion.myVersionGroupID = myVersionGroupID;
             return aKonversion;
         }
-
-        // 2017-11-16 EIO do Json automatically
-        /*
-                public bool loadFromJSONObject(JSONObject aJSONObject)
-                {
-                    string tmpString = "0";
-                    bool? tmpBool = true;
-                    try
-                    {
-                        //setmyLeftNumber((BigDecimal) aJSONObject.get("myLeftNumber"));
-                        //tmpString = (String) aJSONObject.get("myLeftNumber");
-                        tmpString = (string) aJSONObject.get("myLeftNumber");
-                        //tmpString = Double.toString(tmpDouble);
-                        setmyLeftNumber(new decimal?(tmpString));
-
-                        //setmyRightNumber((BigDecimal) aJSONObject.get("myRightNumber"));
-                        //tmpString = (String) aJSONObject.get("myRightNumber");
-                        tmpString = (string) aJSONObject.get("myRightNumber");
-                        //tmpString = Double.toString(tmpDouble);
-                        setmyRightNumber(new decimal?(tmpString));
-
-                        if (aJSONObject.containsKey("myAddDays"))
-                        {
-                            long myInt = (long?) aJSONObject.get("myAddDays").Value;
-                            AddDays = (int)myInt;
-                        }
-                        tmpBool = (bool?) aJSONObject.get("myLeft2Right");
-                        setmyLeft2Right(tmpBool);
-
-                        if (aJSONObject.containsKey("myRightDST"))
-                        {
-                            bool? myBool = (bool?) aJSONObject.get("myRightDST");
-                            setmyRightDST(myBool);
-                        }
-                        if (aJSONObject.containsKey("myLeftDST"))
-                        {
-                            bool? myBool = (bool?) aJSONObject.get("myLeftDST");
-                            setmyLeftDST(myBool);
-                        }
-
-                        setmyVersionGroupID((string) aJSONObject.get("myVersionGroupID"));
-                        setmyVertUnitLeftID((string) aJSONObject.get("myVertUnitLeftID"));
-                        setmyVertUnitRightID((string) aJSONObject.get("myVertUnitRightID"));
-
-                        return true;
-                    }
-                    catch (JsonParseException)
-                    {
-                        return false;
-                    }
-                }
-
-        //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-        //ORIGINAL LINE: @SuppressWarnings("unchecked") public final org.json.simple.JSONObject buildJSONObject()
-                public JSONObject buildJSONObject()
-                {
-                    string tmpString = "0";
-                    try
-                    {
-                        JSONObject myJSONObject = new JSONObject();
-
-                        tmpString = getmyLeftNumber().toPlainString();
-                        myJSONObject.put("myLeftNumber", tmpString);
-
-                        tmpString = getmyRightNumber().toPlainString();
-                        myJSONObject.put("myRightNumber", tmpString);
-
-                        myJSONObject.put("myVersionGroupID", getmyVersionGroupID());
-                        myJSONObject.put("myVertUnitLeftID", getmyVertUnitLeftID());
-                        myJSONObject.put("myVertUnitRightID", getmyVertUnitRightID());
-
-                        myJSONObject.put("myLeft2Right", getmyLeft2Right());
-                        myJSONObject.put("myAddDays", AddDays);
-                        myJSONObject.put("myRightDST", getmyRightDST());
-                        myJSONObject.put("myLeftDST", getmyLeftDST());
-                        return myJSONObject;
-                    }
-                    catch (JsonParseException)
-                    {
-                        return null;
-                    }
-                }
-        */
 
     }
 }

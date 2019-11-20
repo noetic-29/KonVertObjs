@@ -1,12 +1,16 @@
-﻿using System;
+﻿// Copyright Noetic-29 LLC 2014 - 2019
+// All rights reserved
+// www.noetic-29.com
+
+using System;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft;
-using Newtonsoft.Json;
+//NJusing Newtonsoft;
+//NJusing Newtonsoft.Json;
 
-using Xamarin.Forms;
+//using Xamarin.Forms;
 
 namespace KonVertObjs
 {
@@ -24,7 +28,7 @@ namespace KonVertObjs
             theSet = aSet;
         }
 
-        [JsonConstructor]
+        //NJ[JsonConstructor]
         public KonObj()
         {
             theSet = null;
@@ -33,6 +37,21 @@ namespace KonVertObjs
         public virtual void fixReferences()
         {
             return;        // if unimplemented in a KonObj then nothing to fix, so return true
+        }
+    
+        // 2019-11-20 added setEqualTo as can implement base function
+        public virtual bool setEqualTo(KonObj aKO)
+        {
+            this.theSet = aKO.theSet;
+            this.anyError = aKO.anyError;
+            return true;
+        }
+
+        public virtual KonObj makeStableCopy(KonObj aKO)
+        {
+            KonObj retKO = new KonObj();
+            retKO.setEqualTo(aKO);
+            return retKO;
         }
     }
 
@@ -62,60 +81,14 @@ namespace KonVertObjs
             }
         }
 
-        // seems to be Android specific, will have to check where used
-        /*
-        private Context theContext = null;
-        public Context getmyContext()
-        {
-            return theContext;
-        }
-        public void setmyContext(Context value)
-        {
-            theContext = value;
-        }
-        */
-
         // maxDigits for this current conversion group
         public static int konMaxDigits { get; set; }
-        /*
-         private static int privatekonMaxDigits;
-         public static int getkonMaxDigits()
-         {
-             return privatekonMaxDigits;
-         }
-         public static void setkonMaxDigits(int value)
-         {
-             privatekonMaxDigits = value;
-         }
-         */
 
         // macDecimals for this current conversion group
         public static int konMaxDecimals { get; set; }
-        /*
-        private static int privatekonMaxDecimals;
-        public static int getkonMaxDecimals()
-        {
-            return privatekonMaxDecimals;
-        }
-        public static void setkonMaxDecimals(int value)
-        {
-            privatekonMaxDecimals = value;
-        }
-        */
 
         // culture to use to display values - read from Windows Phone environment
         public static string konKulture { get; set; }
-        /*
-        private static string privatekonKulture;
-        public static string getkonKulture()
-        {
-            return privatekonKulture;
-        }
-        public static void setkonKulture(string value)
-        {
-            privatekonKulture = value;
-        }
-        */
 
         public static bool isGroupTime(KonVersionGroup aGroup)
         {
@@ -185,37 +158,6 @@ namespace KonVertObjs
                 }
             }
             return retBigInt;
-            /*
-                        BigInteger bi60 = new BigInteger(60);
-                        BigInteger bi24 = new BigInteger(24);
-
-                        if (aTime[1].CompareTo(bi60) > 0)
-                        {       // greater than 60, subtract to get remaining minutes and add 1 to hour
-                            aTime[1] = aTime[1] - bi60;
-                            aTime[0] = aTime[0] + BigInteger.One;
-                        }
-                        else if (aTime[1].CompareTo(BigInteger.Zero) < 0)
-                        {       // less than 0, add 60 to minutes to get valid and subtract 1 from hour
-                            aTime[1] = aTime[1] + bi60;
-                            aTime[0] = aTime[0] - BigInteger.One;
-                        }
-                        if (aTime[0].CompareTo(bi24) >= 0)
-                        {       // if went over midnite (or is midnite) adjust hour by 24
-                            aTime[0] = aTime[0] - bi24;
-                        }
-                        else if (aTime[0].CompareTo(BigInteger.Zero) < 0)
-                        {       // went back beyond midnite, adjust forward 
-                            aTime[0] = aTime[0] + bi24;
-                        }
-                        // check for 2400 - it seems midnite is 2400, 12:01am is 0001
-                        if (aTime[0].CompareTo(BigInteger.Zero) == 0)
-                        {
-                            if (aTime[1].CompareTo(BigInteger.Zero) == 0)
-                            {
-                                aTime[0] = bi24;
-                            }
-                        }
-            */
         }
 
         // given the maxdigits and maxdecimals, format the number
@@ -319,7 +261,12 @@ namespace KonVertObjs
 
         public static decimal setPrecision(decimal aNum, int aPrecision)
         {
-            return Math.Truncate(aNum * (10 ^ aPrecision)) / (10 ^ aPrecision);
+            // multiply by number of decimals required, then truncate.  Finally divide bace to get decimal
+            decimal bigNum = aNum * (decimal)(Math.Pow(10, aPrecision));
+            decimal neededNum = Math.Truncate(bigNum);
+            decimal retNum = neededNum / (decimal)Math.Pow(10, aPrecision);
+            return retNum;
+            //return Math.Truncate((aNum * (decimal)(Math.Pow(10,aPrecision))) / ((decimal)(Math.Pow(10, aPrecision))));
         }
 
         private static string[] fractions = new string[] { "", "1/16", "1/8", "1/6", "3/16", "1/4", "5/16", "1/3", "3/8", "7/16", "1/2", "9/16", "5/8", "2/3", "11/16", "3/4", "13/16", "5/6", "7/8", "15/16", "ONE" };
@@ -351,202 +298,4 @@ namespace KonVertObjs
             }
         }
     }
-
-    /*
-        public class WriteLastDynamic : AsyncTask<string, Void, string>
-        {
-            private readonly KonFuncs outerInstance;
-
-            internal Context _Context = null;
-            internal Exception _Exception = null;
-
-            public WriteLastDynamic(KonFuncs outerInstance, Context aContext)
-            {
-                this.outerInstance = outerInstance;
-                _Context = aContext;
-            }
-
-            protected internal override string doInBackground(params string[] arg0)
-            {
-                // invoke with string for file name of lastdynamic file and string of contents
-                try
-                {
-                    System.IO.FileStream fOut = _Context.openFileOutput(arg0[0], Context.MODE_PRIVATE);
-                    System.IO.StreamWriter osw = new System.IO.StreamWriter(fOut);
-
-                    // Write the string to the file
-                    osw.Write(arg0[1]);
-                    osw.Flush();
-                    osw.Close();
-                }
-                catch (IOException e)
-                {
-                    // TOODO Auto-generated catch block
-                    _Exception = e;
-                    Console.WriteLine(_Exception.ToString());
-                    Console.Write(_Exception.StackTrace);
-                }
-                // TOODO Auto-generated method stub
-                return null;
-            }
-        }
-    */
-
-    /*
-        //public class RetrieveFeedTask extends AsyncTask<String, Void, RSSFeed> {
-        public class RetrieveDynamicTask : AsyncTask<string, Void, string>
-        {
-            private readonly KonFuncs outerInstance;
-
-
-            internal Exception exception = null;
-            internal string JsonString = null;
-            //private JSONObject jsonObject = null;
-            internal string _GroupID = null;
-            internal string _DynType = null;
-            //private final WeakReference<String> _ObjectRef;
-            internal Context _Context = null;
-            internal int _db1 = 0;
-            internal int _db2 = 0;
-
-            public RetrieveDynamicTask(KonFuncs outerInstance, string aGroupID, string aDynType, string results, Context aContext)
-            {
-                this.outerInstance = outerInstance;
-                _GroupID = aGroupID;
-                _DynType = aDynType;
-                //_ObjectRef = new WeakReference<String>(results);
-                _Context = aContext;
-            }
-
-            protected internal override string doInBackground(params string[] dynSourceStrs)
-            {
-                _db1 = -2;
-                try
-                {
-                    URL srce = null;
-                    //BufferedReader in = null;
-                    //Object obj = null;
-                    bool goon = false;
-                    _db1 = -1;
-                    try
-                    {
-                        srce = new URL(dynSourceStrs[0]);
-                        goon = true;
-                        _db1 = 1;
-                    }
-                    catch (MalformedURLException e)
-                    {
-                        // TOODO Auto-generated catch block
-                        goon = false;
-                        Console.WriteLine(e.ToString());
-                        Console.Write(e.StackTrace);
-                        exception = (Exception)e;
-                    }
-                    if (goon)
-                    {
-                        try
-                        {
-                            System.IO.Stream x = srce.openStream();
-                            System.IO.MemoryStream myURLText = new System.IO.MemoryStream(10240);
-                            _db2 = 1;
-                            int byteCount = 0;
-                            sbyte[] buffer = new sbyte[1025];
-                            _db2 = 2;
-                            while (byteCount > -1)
-                            {
-                                byteCount = x.Read(buffer, 0, buffer.Length);
-                                if (byteCount > -1)
-                                {
-                                    myURLText.Write(buffer, 0, byteCount);
-                                }
-                                _db1 = _db1 + 1;
-                            }
-                            JsonString = myURLText.ToString();
-                            exception = null;
-                            return JsonString;
-                            //goon = true;
-                        }
-                        catch (IOException e)
-                        {
-                            // TOODO Auto-generated catch block
-                            goon = false;
-                            Console.WriteLine(e.ToString());
-                            Console.Write(e.StackTrace);
-                            exception = (Exception)e;
-                        }
-                        catch (Exception e)
-                        {
-                            goon = false;
-                            Console.WriteLine(e.ToString());
-                            Console.Write(e.StackTrace);
-                            exception = (Exception)e;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                    Console.Write(e.StackTrace);
-                    exception = e;
-                }
-                return (string)null; // null from above
-            }
-
-            protected internal virtual void onPostExecute(string results)
-            {
-                // TOODO: check this.exception 
-                bool isOK = false;
-                if (exception == null)
-                {
-                    //String aResult = (String) _ObjectRef.get();
-                    //aResult = results;
-                    isOK = true;
-                }
-                // TOODO: do something with the feed
-                if (isOK)
-                {
-                    sendBroadcast(results);
-                }
-            }
-
-            internal virtual void sendBroadcast(string results)
-            {
-                Intent intent = new Intent(NOTIFICATION); //put the same message as in the filter you used in the activity when registering the receiver
-                intent.putExtra(DYNTYPE, _DynType);
-                intent.putExtra(GROUPID, _GroupID);
-                intent.putExtra(RESULT, results);
-                intent.putExtra(DEBUG1, _db1);
-                intent.putExtra(DEBUG2, _db2);
-                _Context.sendBroadcast(intent);
-            }
-
-            public virtual bool haveNetworkConnection(Context aContext)
-            {
-                bool haveConnectedWifi = false;
-                bool haveConnectedMobile = false;
-
-                ConnectivityManager cm = (ConnectivityManager)aContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo[] netInfo = cm.AllNetworkInfo;
-                foreach (NetworkInfo ni in netInfo)
-                {
-                    if (ni.TypeName.equalsIgnoreCase("WIFI"))
-                    {
-                        if (ni.Connected)
-                        {
-                            haveConnectedWifi = true;
-                        }
-                    }
-                    if (ni.TypeName.equalsIgnoreCase("MOBILE"))
-                    {
-                        if (ni.Connected)
-                        {
-                            haveConnectedMobile = true;
-                        }
-                    }
-                }
-                return haveConnectedWifi || haveConnectedMobile;
-            }
-        }
-    */
-
 }

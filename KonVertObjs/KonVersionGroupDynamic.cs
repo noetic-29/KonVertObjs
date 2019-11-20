@@ -1,7 +1,8 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 
-// www.noetic-29.com//========================================================================
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -45,10 +46,10 @@ namespace KonVertObjs
     //public class KonVersionGroupDynamic extends KonVersionGroup {
     public class KonVersionGroupDynamic : KonObj
     {
+        // 2019-11-20 only creator
         public KonVersionGroupDynamic(KonVertSet aSet) : base(aSet) { }
-
         // actual group that this dynamic data belongs to
-        //private KonVersionGroup _Group;
+
         public KonVersionGroup Group {
             get {
                 if (theSet != null && GroupID != null && GroupID != "") 
@@ -62,24 +63,24 @@ namespace KonVertObjs
         public void fixReferences(string aGroupID)
         {
             GroupID = aGroupID;
-            fixReferences();
+            fixReferences();        // 2019-11-20 calls the base (KonObj) fixReferences
         }
 
         // 2017-12-07 EIO Tell JSON not to serialize Group so doen's recurse
         public bool ShouldSerializeGroup() { return false; }
 
-        public virtual string GroupID { get; set; }
-
-/*
-        public override bool fixReferences(KonObj anObj)
+        public void setEqualTo(KonVersionGroupDynamic aKVGDyn)
         {
-            if (anObj != null)
-            {
-                Group = (KonVersionGroup)anObj;
-            }
-            return true;
+            this.GroupID = aKVGDyn.GroupID;
+            this.DynamicType = aKVGDyn.DynamicType;
+            this.DynamicSourceLoc = aKVGDyn.DynamicSourceLoc;
+            this.DynamicLastFile = aKVGDyn.DynamicLastFile;
+            this.SourceType = aKVGDyn.SourceType;
+            this.UpdateDate = aKVGDyn.UpdateDate;
+
         }
-*/
+
+        public virtual string GroupID { get; set; }
 
         private string _DynamicType = ""; // e.g. CURRENCY, TIME
         public virtual string DynamicType {
@@ -131,7 +132,8 @@ namespace KonVertObjs
             }
         }
 
-        public virtual bool Time {
+        // 2019-11-20 changed from Time to isItTime to be more clear
+        public virtual bool isItTime {
             get {
                 // compare time of last update to time between updates and determine if time to try again
                 //DateTime current = new DateTime();
@@ -161,6 +163,7 @@ namespace KonVertObjs
             }
         }
 
+#if EDREM
         // UNUSED
         private object _DynamicObject = null;
         public object DynamicObject {
@@ -171,7 +174,7 @@ namespace KonVertObjs
                 _DynamicObject = value;
             }
         }
-
+#endif
         // 2017-11-16 EIO do JSON automatically
         //JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
         //ORIGINAL LINE: @SuppressWarnings("unchecked") public final org.json.simple.JSONObject buildJSONObject()
@@ -309,7 +312,8 @@ namespace KonVertObjs
 			return false;
 		}
 
-		public bool writeLastUpdate(string aJsonString)//, Context aContext)
+#if SysIO
+        public bool writeLastUpdate(string aJsonString)//, Context aContext)
 		{
             // TODO - handle IO to hold dynamic data (e.g. Currency rates from Internet)
             /*
@@ -335,7 +339,6 @@ namespace KonVertObjs
     */
 			return false;
 		}
-
+#endif
 	}
-
 }

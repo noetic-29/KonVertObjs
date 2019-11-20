@@ -1,4 +1,7 @@
-﻿//========================================================================
+﻿// Copyright Noetic-29 LLC 2014 - 2019
+// All rights reserved
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -92,7 +95,7 @@ namespace KonVertObjs
         // changes to DateTime
         public DateTime DynamicUpdateDate { get; set; }
 
-       public KonVersion myLastKonVersion { get; set; }
+        public KonVersion myLastKonVersion { get; set; }
 
         public KonVersionGroupDynamic GroupDynamics { get; set; }
 
@@ -279,7 +282,7 @@ namespace KonVertObjs
             anyError = null;
             try
             {
-                this.konVertUnits = aKonVersionGroup.konVertUnits;
+                //this.konVertUnits = aKonVersionGroup.konVertUnits;
                 this.myBaseUnitID = aKonVersionGroup.myBaseUnitID;
                 this.myDecimals = aKonVersionGroup.myDecimals;
                 this.myDoPrettyPrint = aKonVersionGroup.myDoPrettyPrint;
@@ -287,13 +290,31 @@ namespace KonVertObjs
                 this.myDefaultUnitRightID = aKonVersionGroup.myDefaultUnitRightID;
                 this.myDisplayText = aKonVersionGroup.myDisplayText;
                 this.myDisplayTextShort = aKonVersionGroup.myDisplayTextShort;
-                this.myLastKonVersion = aKonVersionGroup.myLastKonVersion;
+                //this.myLastKonVersion = aKonVersionGroup.myLastKonVersion;
                 this.myMaxDigits = aKonVersionGroup.myMaxDigits;
                 this.myToolTip = aKonVersionGroup.myToolTip;
                 this.myGroupListOrder = aKonVersionGroup.myGroupListOrder;
                 this.myVersionGroupID = aKonVersionGroup.myVersionGroupID;
-                this.myVertUnits = aKonVersionGroup.myVertUnits;
 
+                // 2019-11-19 cleanup, not sure why this ever worked well
+                this.konVertUnits = new List<KonVertUnit>(aKonVersionGroup.konVertUnits);
+                //this.konVertUnits.setEqualTo(aKonVersionGroup.konVertUnits);      // allow to point to same, units should not change
+
+                this.myLastKonVersion = new KonVersion(aKonVersionGroup.myVersionGroupID, aKonVersionGroup.theSet);
+                this.myLastKonVersion.setEqualTo(aKonVersionGroup.myLastKonVersion);
+
+                this.myAppApplys = new List<string>(aKonVersionGroup.AppApplys);
+                //this.myAppApplys.setEqualTo(aKonVersionGroup.AppApplys);          // List of strings seems to keep unique integrity
+
+                this.GroupDynamics = new KonVersionGroupDynamic(aKonVersionGroup.theSet);
+                this.GroupDynamics.setEqualTo(aKonVersionGroup.GroupDynamics);
+                
+                this.ValueEntryPrompt = aKonVersionGroup.ValueEntryPrompt;
+                this.UnitEntryPrompt = aKonVersionGroup.UnitEntryPrompt;
+                this.DynamicReadIntervalDays = aKonVersionGroup.DynamicReadIntervalDays;
+                this.DynamicReadHold = aKonVersionGroup.DynamicReadHold;
+                this.DynamicUpdateDate = aKonVersionGroup.DynamicUpdateDate;
+                
                 //fixReferences(this);
                 return true;
             }

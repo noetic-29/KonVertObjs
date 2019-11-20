@@ -1,7 +1,8 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 
-// www.noetic-29.com//========================================================================
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -30,9 +31,16 @@ namespace KonVertObjs
 	// currency conversion.  IT DOES NOT REPLACE KonVertUnit and all work with the Units and
 	// KonVersions are done in the NORMAL fashion (as opposed to KonVertUnitTime).
 
-	public class KonVertUnitCurrItem : Object
+	public class KonVertUnitCurrItem : KonObj
 	{
-		// {"rate":[{"id":"EURUSD","Name":"EUR to USD","Rate":"1.1343","Date":"2/3/2015","Time":"9:48pm","Ask":"1.1344","Bid":"1.1343"}
+        // {"rate":[{"id":"EURUSD","Name":"EUR to USD","Rate":"1.1343","Date":"2/3/2015","Time":"9:48pm","Ask":"1.1344","Bid":"1.1343"}
+
+        public KonVertUnitCurrItem(KonVertSet aSet) : base(aSet) { }
+
+        // for JSON constructor
+        public KonVertUnitCurrItem() {
+            theSet = null;
+        }
 
         public string ID { get; set; }
 /*

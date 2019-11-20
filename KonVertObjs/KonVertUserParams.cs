@@ -1,7 +1,8 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 
-// www.noetic-29.com//========================================================================
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -9,8 +10,8 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft;
-using Newtonsoft.Json;
+//NJusing Newtonsoft;
+//NJusing Newtonsoft.Json;
 using System.IO;
 
 /*
@@ -28,10 +29,6 @@ namespace KonVertObjs
 {
 	public class KonVertUserParams : KonObj
 	{
-		private List<KonVersion> inPreviousKonversions = new List<KonVersion>();
-		private List<KonVersion> inUserGroupKonversions = new List<KonVersion>();
-		private List<KonUserGroupSetting> inUserGroupSettings = new List<KonUserGroupSetting>();
-
         public KonVertUserParams(KonVertSet aset) : base(aset) { }
 
         public virtual bool isPaid { get; set; }
@@ -45,12 +42,33 @@ namespace KonVertObjs
 			ConVersionCount += 1;
 		}
 
-		// Last (5) conversions performed by this user - preset to 5 standard conversions
-        public List<KonVersion> previousKonversions { get; set; }
+        // Last (5) conversions performed by this user - preset to 5 standard conversions
+        private List<KonVersion> _previousKonversions;
+        public List<KonVersion> previousKonversions {
+            get 
+            {
+                if (_previousKonversions == null) _previousKonversions = new List<KonVersion>();
+                return _previousKonversions;
+            }
+            set 
+            {
+                _previousKonversions = value;
+            }
+        }
 
-        public List<KonVersion> userGroupKonversions { get; set; }
+        private List<KonVersion> _userGroupKonversions;
+        public List<KonVersion> userGroupKonversions {
+            get {
+                if (_userGroupKonversions == null) _userGroupKonversions = new List<KonVersion>();
+                return _userGroupKonversions;
+            }
+            set {
+                _userGroupKonversions = value;
+            }
+        }
 
         // User settable (paid) settings for each KonversionGroup
+        private List<KonUserGroupSetting> inUserGroupSettings = new List<KonUserGroupSetting>();
         public List<KonUserGroupSetting> userGroupSettings {
             get 
             {
@@ -96,246 +114,7 @@ namespace KonVertObjs
             }
         }
 
-        // 2017-11-17 EIO JSON automatic
-#if REM
-        public bool? writeJsonFile(string aFileName, Context aContext)
-		{
-			JSONObject myJSONObject;
-
-			myJSONObject = buildJSONObject();
-			try
-			{ // catches IOException below
-				// ##### Write a file to the disk #####
-				/* We have to use the openFileOutput()-method 
-				 * the ActivityContext provides, to
-				 * protect your file from others and 
-				 * This is done for security-reasons. 
-				 * We chose MODE_WORLD_READABLE, because
-				 *  we have nothing to hide in our file */		
-				//FileOutputStream fOut = new FileOutputStream(aFileName);
-				System.IO.FileStream fOut = aContext.openFileOutput(aFileName, Context.MODE_PRIVATE);
-				System.IO.StreamWriter osw = new System.IO.StreamWriter(fOut);
-
-				// Write the string to the file
-				osw.BaseStream.WriteByte(myJSONObject.toJSONString());
-				/* ensure that everything is 
-				 * really written out and close */
-				osw.Flush();
-				osw.Close();
-				return true;
-			}
-			catch (Exception e)
-			{
-				setanyError(e);
-				//throw;
-				return false;
-			}
-			catch (IOException ei)
-			{
-				setanyError(ei);
-				//throw;
-				return false;
-			}
-		}
-
-		public bool readJsonFile(string aFileName, Context aContext)
-		{
-			try
-			{
-				setanyError(null);
-				JSONParser parser = new JSONParser();
-
-				 System.IO.FileStream fIn = aContext.openFileInput(aFileName);
-				System.IO.StreamReader isr = new System.IO.StreamReader(fIn.FD);
-
-				//Object obj = parser.parse(new FileReader(aFileName));
-				object obj = parser.parse(isr);
-
-				JSONObject jsonObject = (JSONObject) obj;
-				return loadFromJSONObject(jsonObject);
-			}
-			catch (FileNotFoundException e)
-			{
-				Console.WriteLine(e.ToString());
-				Console.Write(e.StackTrace);
-			}
-			catch (IOException e)
-			{
-				Console.WriteLine(e.ToString());
-				Console.Write(e.StackTrace);
-			}
-			catch (ParseException e)
-			{
-				Console.WriteLine(e.ToString());
-				Console.Write(e.StackTrace);
-			}
-
-	/*
-	 		FileInputStream fIn = aContext.openFileInput(aFileName);
-	        InputStreamReader isr = new InputStreamReader(fIn);
-	        ///* Prepare a char-Array that will
-	        // * hold the chars we read back in.
-	        char[] inputBuffer = new char[TESTSTRING.length()];
-	        // Fill the Buffer with data from the file
-	        isr.read(inputBuffer);
-	        // Transform the chars to a String
-	        String readString = new String(inputBuffer);
-	       
-	        // Check if we read back the same chars that we had written out
-	        boolean isTheSame = TESTSTRING.equals(readString);
-	
-	        // WOHOO lets Celebrate =)
-	        Log.i("File Reading stuff", "success = " + isTheSame);
-	*/
-
-			return false;
-		}
-
-		public bool loadFromJSONObject(JSONObject aJSONObject)
-		{
-			try
-			{
-				/// <summary>
-				/// try {
-				/// boolean myFlag = (boolean) aJSONObject.get("myisPaid");
-				/// setisPaid(myFlag);
-				/// } catch (JsonParseException e){
-				/// setisPaid(false);
-				/// }
-				/// </summary>
-
-				inPreviousKonversions = new List<KonVersion>();
-				JSONArray ja = new JSONArray();
-				ja = (JSONArray) aJSONObject.get("previousKonversions");
-				for (int i = 0; i < ja.size(); i++)
-				{
-					JSONObject aKonv = (JSONObject) ja.get(i);
-					KonVersion myKV = new KonVersion();
-					myKV.loadFromJSONObject(aKonv);
-					inPreviousKonversions.Add(myKV);
-				}
-
-				inUserGroupKonversions = new List<KonVersion>();
-				JSONArray jag = new JSONArray();
-				jag = (JSONArray) aJSONObject.get("userGroupKonversions");
-				for (int i = 0; i < jag.size(); i++)
-				{
-					JSONObject aKonv = (JSONObject) jag.get(i);
-					KonVersion myKV = new KonVersion();
-					myKV.loadFromJSONObject(aKonv);
-					inUserGroupKonversions.Add(myKV);
-				}
-
-				if (aJSONObject.containsKey("myisPaid"))
-				{
-					bool myFlag = (bool?) aJSONObject.get("myisPaid").Value;
-					setisPaid(myFlag);
-
-					if (aJSONObject.containsKey("myNoBuy"))
-					{
-						bool myNoBuy = (bool?) aJSONObject.get("myNoBuy").Value;
-						setnoBuy(myNoBuy);
-					}
-					else
-					{
-						setnoBuy(false);
-					}
-
-					// 2014-10-07 EIO add conversion counter so can space interstitial ads
-					if (aJSONObject.containsKey("myConVersionCount"))
-					{
-						long myCount = (long?) aJSONObject.get("myConVersionCount").Value;
-						ConVersionCount = (int) myCount;
-					}
-					else
-					{
-						ConVersionCount = 0;
-					}
-
-					inUserGroupSettings = new List<KonUserGroupSetting>();
-					JSONArray jug = new JSONArray();
-					try
-					{
-						jug = (JSONArray) aJSONObject.get("userGroupSettings");
-						for (int i = 0; i < jug.size(); i++)
-						{
-							JSONObject aKUGS = (JSONObject) jug.get(i);
-							KonUserGroupSetting myKUGS = new KonUserGroupSetting();
-							myKUGS.loadFromJSONObject(aKUGS);
-							inUserGroupSettings.Add(myKUGS);
-						}
-					}
-					catch (JsonParseException)
-					{
-						//int i = 1;
-						// do nothing, should be empty array
-					}
-				}
-				else
-				{
-					setisPaid(false);
-					setnoBuy(false);
-					inUserGroupSettings = new List<KonUserGroupSetting>(); // empty array
-				}
-
-				return true;
-			}
-			catch (JsonParseException)
-			{
-				return false;
-			}
-		}
-
-//JAVA TO C# CONVERTER TODO TASK: Most Java annotations will not have direct .NET equivalent attributes:
-//ORIGINAL LINE: @SuppressWarnings("unchecked") public final org.json.simple.JSONObject buildJSONObject()
-		public JSONObject buildJSONObject()
-		{
-			try
-			{
-				JSONObject myJSONObject = new JSONObject();
-
-				myJSONObject.put("myisPaid", getisPaid());
-				// 2014-10=07 EIO - save counts of conversions
-				myJSONObject.put("myConVersionCount", ConVersionCount);
-				myJSONObject.put("myNoBuy", getnoBuy());
-
-				JSONArray ja = new JSONArray();
-				for (int i = 0; i < inPreviousKonversions.Count; i++)
-				{
-					KonVersion aKVU = inPreviousKonversions[i];
-					JSONObject aUnit = aKVU.buildJSONObject();
-					ja.add(aUnit);
-				}
-				myJSONObject.put("previousKonversions", ja);
-
-				JSONArray jag = new JSONArray();
-				for (int i = 0; i < inUserGroupKonversions.Count; i++)
-				{
-					KonVersion aKVU = inUserGroupKonversions[i];
-					JSONObject aUnit = aKVU.buildJSONObject();
-					jag.add(aUnit);
-				}
-				myJSONObject.put("userGroupKonversions", jag);
-
-				JSONArray jug = new JSONArray();
-				for (int i = 0; i < inUserGroupSettings.Count; i++)
-				{
-					KonUserGroupSetting aKUG = inUserGroupSettings[i];
-					JSONObject aUnit = aKUG.buildJSONObject();
-					jug.add(aUnit);
-				}
-				myJSONObject.put("userGroupSettings", jug);
-
-				return myJSONObject;
-			}
-			catch (JsonParseException)
-			{
-				return null;
-			}
-		}
-#endif
-
-        public bool setEqual(KonVertUserParams aKonVertUserParams)
+        public bool setEqualTo(KonVertUserParams aKonVertUserParams)
         {
             anyError = null;
             try
@@ -344,9 +123,38 @@ namespace KonVertObjs
                 this.noBuy = aKonVertUserParams.noBuy;
                 this.ConVersionCount = aKonVertUserParams.ConVersionCount;
 
+                // this code did not create a second copy of these lists so changed to contained elements are reflected in both KonVertUserParams
+#if EDREM
                 this.previousKonversions = aKonVertUserParams.previousKonversions;
                 this.userGroupKonversions = aKonVertUserParams.userGroupKonversions;
                 this.userGroupSettings = aKonVertUserParams.userGroupSettings;
+#endif
+                //this.previousKonversions = aKonVertUserParams.previousKonversions;
+                this.previousKonversions = new List<KonVersion>();
+                foreach (KonVersion aKV in aKonVertUserParams.previousKonversions)
+                {
+                    KonVersion newKV = new KonVersion();
+                    newKV.setEqualTo(aKV);
+                    this.previousKonversions.Add(newKV);
+                }
+
+                //this.userGroupKonversions = aKonVertUserParams.userGroupKonversions;
+                this.userGroupKonversions = new List<KonVersion>();
+                foreach (KonVersion aKV in aKonVertUserParams.userGroupKonversions)
+                {
+                    KonVersion newKV = new KonVersion();
+                    newKV.setEqualTo(aKV);
+                    this.userGroupKonversions.Add(newKV);
+                }
+
+                //this.userGroupSettings = aKonVertUserParams.userGroupSettings;
+                this.userGroupSettings = new List<KonUserGroupSetting>();
+                foreach (KonUserGroupSetting aKUGS in aKonVertUserParams.userGroupSettings)
+                {
+                    KonUserGroupSetting newKUGS = new KonUserGroupSetting(this.theSet);
+                    newKUGS.setEqualTo(aKUGS);
+                    this.userGroupSettings.Add(newKUGS);
+                }
 
                 //fixReferences(this);
                 return true;
@@ -391,27 +199,35 @@ namespace KonVertObjs
 			previousKonversions.Insert(0, aKonVersion);
 
 
-			// Stand to reason that if this is the most recent previous conversion, then it's also the last Konversion for it's group
-			foreach (KonVersion aKonv in userGroupKonversions)
-			{
-				if (aKonv.myVersionGroupID.Equals(aKonVersion.myVersionGroupID))
-				{
-					aKonVersion.makeLastKonversion();
-					userGroupKonversions.Remove(aKonv);
-					userGroupKonversions.Add(aKonVersion);
-					gotIt = true;
-					break;
-				}
-			}
-			if (gotIt == false)
-			{
-				aKonVersion.makeLastKonversion();
-				userGroupKonversions.Add(aKonVersion);
-			}
+            // Stand to reason that if this is the most recent previous conversion, then it's also the last Konversion for it's group
+            addGroupKonVersion(aKonVersion);
+
 			return;
 		}
 
-		public void addUserGroupSetting(KonUserGroupSetting aUserGroupSetting)
+        public void addGroupKonVersion(KonVersion aKonVersion)
+        {
+            bool gotIt = false;
+            foreach (KonVersion aKonv in userGroupKonversions)
+            {
+                if (aKonv.myVersionGroupID.Equals(aKonVersion.myVersionGroupID))
+                {
+                    aKonVersion.makeLastKonversion();
+                    userGroupKonversions.Remove(aKonv);
+                    userGroupKonversions.Add(aKonVersion);
+                    gotIt = true;
+                    break;
+                }
+            }
+            if (gotIt == false)
+            {
+                aKonVersion.makeLastKonversion();
+                userGroupKonversions.Add(aKonVersion);
+            }
+            return;
+        }
+
+        public void addUserGroupSetting(KonUserGroupSetting aUserGroupSetting)
 		{
 			foreach (KonUserGroupSetting aKUGS in userGroupSettings)
 			{
@@ -436,45 +252,5 @@ namespace KonVertObjs
 			return null;
 		}
 
-        public bool readJsonFile(string aFileName)
-        {
-            anyError = null;
-            try
-            {
-                KonVertUserParams myUserParams = (KonVertUserParams)JsonConvert.DeserializeObject<KonVertUserParams>(aFileName);
-                setEqual(myUserParams);
-                return true;
-            }
-            catch (JsonException je)
-            {
-                anyError = je;
-                return false;
-            }
-        }
-        /*
-                public bool writeJsonFile(string aFileName)
-                {
-                    anyError = null;
-                    try
-                    {
-
-                        var text = File.ReadAllText("TestData/ReadMe.txt");
-                        Console.WriteLine(text);
-
-
-                        TextWriter xx = new TextWriter();
-
-
-                        TextWriter(@"c:\movie.json", JsonConvert.SerializeObject(movie));
-
-                    }
-                    catch (JsonException je)
-                    {
-                        anyError = je;
-                        return false;
-                    }
-
-                }
-        */
     }
 }

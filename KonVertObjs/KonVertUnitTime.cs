@@ -1,7 +1,8 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 
-// www.noetic-29.com//========================================================================
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -12,7 +13,7 @@ using System.Numerics;
 namespace KonVertObjs
 {
 
-	public class KonVertUnitTime : Object
+	public class KonVertUnitTime : KonObj
 	{
         public KonVersion konVersion { get; set; }
 /*
@@ -40,6 +41,13 @@ namespace KonVertObjs
 		{
 			konVersion = null;
 		}
+
+        public KonVertUnitTime(KonVertSet aSet) : base(aSet) { }
+
+        public KonVertUnitTime(KonVertSet aSet, KonVersion aKonv) : base(aSet)
+        {
+            konVersion = aKonv;
+        }
 
 		public virtual bool performKonversionTime(bool doLeftRight)
 		{
@@ -258,26 +266,6 @@ namespace KonVertObjs
 */
 		}
 
-        private static BigInteger[] breakTime(decimal a24HrTime)
-        {
-            BigInteger myI100 = 100;
-            BigInteger my24HrTime = (BigInteger)a24HrTime;
-            BigInteger[] myInBreakDown = new BigInteger[3];
-            // divide by 100, leaving integer hours in myBreakDown[0], num of minutes in myBreakDown[1]
-            myInBreakDown[0] = BigInteger.Divide(my24HrTime, myI100);
-            myInBreakDown[1] = BigInteger.Remainder(my24HrTime, myI100);
-            return myInBreakDown;
-        }
-
-        private static decimal[] breakAddr(decimal anAdder)
-        {
-            decimal[] myAddBreakDown = new decimal[2];
-            // divide by 1 leaving integer hours in myAddBreakDown[0] and a fraction of hours in myBreakDown[1]
-            myAddBreakDown[0] = KonFuncs.setPrecision(anAdder, 0);          // get integer portion
-            myAddBreakDown[1] = anAdder - myAddBreakDown[0];        // get remainder
-            return myAddBreakDown;
-        }
-
         private decimal doKonvertToFromSelfTime(decimal aNumBaseUnits, decimal anAdder, bool isTo)
         {
             // aNumThisUnits is a 24 hour clock time expressed as an integer.
@@ -346,29 +334,6 @@ namespace KonVertObjs
 */
 		}
 
-		public static decimal checkTime(decimal value)
-		{
-			if (value < 0)
-			{
-				value = decimal.Zero;
-			}
-			else if (value > 2400)
-			{
-				value = 2400;
-			}
-			return value;
-		}
-
-		public static string getmyNumberDisplay(string myStr)
-		{
-			if (myStr.Length < 4)
-			{
-				myStr = "0000" + myStr;
-				myStr = myStr.Substring(myStr.Length - 4);
-			}
-			return myStr;
-		}
-
         // 2017-11-18 EIO THere are THREE fixTime functions (2 private in KonVertUnitTime and 1 public in KonFunc)
         //   The first here takes a decimal 24hr time, converts to BigInteger Hour/Minute and calls the second
         //   The second here takes a BigInteger array[3] of hour/minute/addDay and makes sure it is a legal 24hr time
@@ -393,36 +358,50 @@ namespace KonVertObjs
             newTime = KonFuncs.fixTime(aTime);
             konVersion.AddDays += (int)newTime[2];
             return newTime;
-/*
-            if (aTime[1] > 60)
-			{
-				aTime[1] = aTime[1] - 60;
-				aTime[0] = aTime[0] + 1;
-			}
-			else if (aTime[1] < 0)
-			{
-				aTime[1] = aTime[1] + 60;
-				aTime[0] = aTime[0] - 1;
-			}
-			if (aTime[0] > 24)
-			{
-				aTime[0] = aTime[0] - 24;
-                konVersion.AddDays = konVersion.AddDays + 1;
-			}
-			else if (aTime[0] <= 0)
-			{
-				aTime[0] = aTime[0] + 24;
-                konVersion.AddDays = konVersion.AddDays - 1;
-			}
-			// check for 2400
-			if (aTime[0] == 0)
-			{
-				if (aTime[1] == 0)
-				{
-					aTime[0] = 24;
-				}
-			}
-*/
 		}
-	}
+
+        private static BigInteger[] breakTime(decimal a24HrTime)
+        {
+            BigInteger myI100 = 100;
+            BigInteger my24HrTime = (BigInteger)a24HrTime;
+            BigInteger[] myInBreakDown = new BigInteger[3];
+            // divide by 100, leaving integer hours in myBreakDown[0], num of minutes in myBreakDown[1]
+            myInBreakDown[0] = BigInteger.Divide(my24HrTime, myI100);
+            myInBreakDown[1] = BigInteger.Remainder(my24HrTime, myI100);
+            return myInBreakDown;
+        }
+
+        private static decimal[] breakAddr(decimal anAdder)
+        {
+            decimal[] myAddBreakDown = new decimal[2];
+            // divide by 1 leaving integer hours in myAddBreakDown[0] and a fraction of hours in myBreakDown[1]
+            myAddBreakDown[0] = KonFuncs.setPrecision(anAdder, 0);          // get integer portion
+            myAddBreakDown[1] = anAdder - myAddBreakDown[0];        // get remainder
+            return myAddBreakDown;
+        }
+
+        public static decimal checkTime(decimal value)
+        {
+            if (value < 0)
+            {
+                value = decimal.Zero;
+            }
+            else if (value > 2400)
+            {
+                value = 2400;
+            }
+            return value;
+        }
+
+        public static string getmyNumberDisplay(string myStr)
+        {
+            if (myStr.Length < 4)
+            {
+                myStr = "0000" + myStr;
+                myStr = myStr.Substring(myStr.Length - 4);
+            }
+            return myStr;
+        }
+
+    }
 }

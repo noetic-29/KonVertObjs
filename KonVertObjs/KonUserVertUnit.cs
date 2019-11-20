@@ -1,7 +1,8 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 
-// www.noetic-29.com//========================================================================
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -22,8 +23,8 @@
 	//import java.math.BigDecimal;
 */
 using System;
-using Newtonsoft;
-using Newtonsoft.Json;
+//NJusing Newtonsoft;
+//NJusing Newtonsoft.Json;
 
 namespace KonVertObjs
 {
@@ -33,7 +34,7 @@ namespace KonVertObjs
 
         public KonUserVertUnit(KonVertSet aSet) : base(aSet) { }
 
-        [JsonConstructor]
+        //NJ[JsonConstructor]
         public KonUserVertUnit() : base()
         {
             theSet = null;

@@ -1,8 +1,14 @@
-﻿using System;
+﻿// Copyright Noetic-29 LLC 2014 - 2019
+// All rights reserved
+// www.noetic-29.com
+#define NewtonSoft
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace KonVertObjs
 {
@@ -46,7 +52,6 @@ namespace KonVertObjs
             }
         }
 
-
         public override void fixReferences()
         {
             if (myKonVertUserParams != null)
@@ -65,7 +70,6 @@ namespace KonVertObjs
             return;
         }
 
-        
         // boolean set if user buys out of ads
         public Boolean isPaid {
             get {
@@ -142,11 +146,11 @@ namespace KonVertObjs
 
         public KonVersionGroup getKonVersionGroup(string aKonVersionGroupID)
         {
-            if (myKonVersionGroups != null && aKonVersionGroupID != null && aKonVersionGroupID != "")
+            if (myKonVersionGroups != null && !String.IsNullOrEmpty(aKonVersionGroupID))
             {
                 foreach (KonVersionGroup aKonVersionGroup in myKonVersionGroups)
                 {
-                    if (aKonVersionGroup.myVersionGroupID == aKonVersionGroupID)
+                    if (String.Compare(aKonVersionGroup.myVersionGroupID, aKonVersionGroupID) == 0)
                     {
                         return aKonVersionGroup;
                     }
@@ -154,6 +158,7 @@ namespace KonVertObjs
             }
             return null;
         }
+#if EDREM
 
 #if WINDOWS
         // Routine to read KonVertParams and load in objects where only strings are saved
@@ -389,6 +394,7 @@ namespace KonVertObjs
             }
         }
 #endif
+#endif
 
         public static void doSortGroup(List<KonVersionGroup> aWrkList, bool ascending)
         {
@@ -424,7 +430,7 @@ namespace KonVertObjs
             }
         }
 
-        public bool setEqual(KonVertSet aKonVertSet)
+        public bool setEqualTo(KonVertSet aKonVertSet)
         {
             anyError = null;
             try
@@ -501,6 +507,7 @@ namespace KonVertObjs
             }
         }
 
+#if NewtonSoft
         // Routine to read KonVertParams and load in objects where only strings are saved
         public bool loadDynamicUserParams()
         {	// routine to use standard KonVertUserParams location in the Instance Folder
@@ -512,6 +519,7 @@ namespace KonVertObjs
 
         public bool loadDynamicUserParams(string aUserParamsFile)
         {
+#if NeedsWork
             KonVertUserParams aKonVertUserParams = new KonVertUserParams(theSet);
             if (aKonVertUserParams.readJsonFile(aUserParamsFile) == true)
             {
@@ -558,6 +566,7 @@ namespace KonVertObjs
                     }
                 }
             }
+#endif
             return true;
         }
 
@@ -580,7 +589,6 @@ namespace KonVertObjs
             return false;
 */
         }
-
-    }
-
+#endif
+        }
 }

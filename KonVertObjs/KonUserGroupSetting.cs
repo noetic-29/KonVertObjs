@@ -1,7 +1,8 @@
-﻿// Copyright Noetic-29 LLC 2014 - 2018
+﻿// Copyright Noetic-29 LLC 2014 - 2019
 // All rights reserved
 
-// www.noetic-29.com//========================================================================
+// www.noetic-29.com
+//========================================================================
 // This conversion was produced by the Free Edition of
 // Java to C# Converter courtesy of Tangible Software Solutions.
 // Order the Premium Edition at https://www.tangiblesoftwaresolutions.com
@@ -30,58 +31,10 @@ namespace KonVertObjs
 	public class KonUserGroupSetting : KonObj
 	{
         public KonUserGroupSetting(KonVertSet aSet) : base(aSet) { }
-
         public string myVersionGroupID { get; set; }
-/*
-		private string privatemyVersionGroupID;
-		public string getmyVersionGroupID()
-		{
-			return privatemyVersionGroupID;
-		}
-		public void setmyVersionGroupID(string value)
-		{
-			privatemyVersionGroupID = value;
-		}
-*/
-
         public bool myDoPrettyPrint { get; set; }
-/*
-		private bool privatemyDoPrettyPrint;
-		public bool getmyDoPrettyPrint()
-		{
-			return privatemyDoPrettyPrint;
-		}
-		public void setmyDoPrettyPrint(bool value)
-		{
-			privatemyDoPrettyPrint = value;
-		}
-*/
-
         public bool myDoDecimal { get; set; }
-        /*
-                private bool _myDoDecimal;
-                public bool getmyDoDecimal()
-                {
-                    return _myDoDecimal;
-                }
-                public void setmyDoDecimal(bool value)
-                {
-                    _myDoDecimal = value;
-                }
-        */
-
         public long myUnitPrecision { get; set; }
-/*
-        private long _myUnitPrecision;
-		public long getmyUnitPrecision()
-		{
-			return _myUnitPrecision;
-		}
-		public void setmyUnitPrecision(long value)
-		{
-			_myUnitPrecision = value;
-		}
-*/
 
 		// 2015-02-04 EIO - add dynamic update interval in number and fraction of days
 		//    but display to user as something better???
@@ -99,36 +52,7 @@ namespace KonVertObjs
 		}
 
         public bool DynamicReadHold { get; set; }
-/*
-		private bool _DynamicReadHold = false;
-		public bool DynamicReadHold
-		{
-			get
-			{
-				return _DynamicReadHold;
-			}
-			set
-			{
-				_DynamicReadHold = value;
-			}
-		}
-*/
-
         public DateTime DynamicUpdateDate { get; set; }
-        /*
-                private string _DynamicUpdateDate = "";
-                public string DynamicUpdateDate
-                {
-                    get
-                    {
-                        return _DynamicUpdateDate;
-                    }
-                    set
-                    {
-                        _DynamicUpdateDate = value;
-                    }
-                }
-        */
 
         private List<KonUserVertUnit> _myUserVertUnits;
         public List<KonUserVertUnit> myUserVertUnits {
@@ -153,7 +77,6 @@ namespace KonVertObjs
                 }
             }
         }
-
         public virtual void loadCurrent(KonVersionGroup aGroup)
 		{
 			if (aGroup != null)
@@ -171,12 +94,10 @@ namespace KonVertObjs
 				DynamicUpdateDate = aGroup.DynamicUpdateDate;
 			}
 		}
-
 		public override string ToString()
 		{
 			return myVersionGroupID + "-USER";
 		}
-
         public KonUserVertUnit findKonUserVertUnit(String aUserVertUnitID)
         {
             if (myUserVertUnits != null)
@@ -191,12 +112,12 @@ namespace KonVertObjs
             }
             return null;
         }
-
         public void addKonUserVertUnit(KonUserVertUnit aKUVU)
         {
             foreach (KonUserVertUnit myKUVU in myUserVertUnits)
             {
-                if (aKUVU.myVersionUnitID == myKUVU.myVersionUnitID)
+                if (String.Compare(myKUVU.myVersionUnitID, aKUVU.myVersionUnitID) == 0)     // 2019-06-02 better code
+                //if (aKUVU.myVersionUnitID == myKUVU.myVersionUnitID)
                 {
                     myUserVertUnits.Remove(aKUVU);
                     break;
