@@ -12,6 +12,16 @@ using System.Numerics;
 
 namespace KonVertObjs
 {
+    // 2019-11-21 NOTE: KonVertUnitTime should probably be derived from KonVerUnit but that would mean that all of KonVertUnit's
+    //     methods would have to be overrideable.  Instead I chose in the past to have KonVertUnitTime only contain one element, the 
+    //     KonVertUnit, and still implemented all of the functions of KonVertUnit but doing them for time.  Not sure this was a wise choice
+
+    // 2011-11-21  It's even worse than I thought.  KonVertUnitTime should be related to KonVertUnit but is, instead, related to KonVersion
+    //     Should probably be called KonVersionTime.  and should inherit from KonVersion.  So can't use this to help build window and display 
+    //     DST.  OH WELL
+
+    // 2019-11-21 But as of this date, I'm using addl (from KonObj) to get the text for the DST prompt.  Means will have to create new apk
+    //     each year for changes in start/stop dates.  Not the best solution
 
 	public class KonVertUnitTime : KonObj
 	{
@@ -403,5 +413,13 @@ namespace KonVertObjs
             return myStr;
         }
 
+#if EDREM
+        // 2011-11-21 add DST prompt using KonObj addl
+        public string DSTPrompt {
+            get {
+                return addl;
+            }
+        }
+#endif
     }
 }

@@ -28,6 +28,8 @@ namespace KonVertObjs
             theSet = aSet;
         }
 
+        public string addl { get; set; }
+
         //NJ[JsonConstructor]
         public KonObj()
         {
